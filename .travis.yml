@@ -1,0 +1,40 @@
+language: julia
+os:
+  - linux
+julia:
+  - 1.0
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=true
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryProvider", url="https://github.com/JuliaPackaging/BinaryProvider.jl"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryBuilder", url="https://github.com/JuliaPackaging/BinaryBuilder.jl")); Pkg.build()'
+
+script:
+  - julia build_tarballs.jl
+
+
+deploy:
+    provider: releases
+    api_key:
+        # Note; this api_key is only valid for JuliaOpt/COINBLASBuilder; you need
+        # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+        secure: Av9if4/yWqqn82dMpuq07raXBkvGoTDhw6NDdC4S7AladWpOnCEWBSmlyv1Rnapmqpdis3KDPrZP3xJXrlWlBiPWK+4ofcX0eX3VcQDl8PecDN09gheeTcwxpAxQify37xMOCb0EhSNu0a/YLyiefryittRFSuCgmgNEYaKKRxw9D/c/A5MYvNbaG+T/9LAHK3ApyChzoIUNZEVaoCUlg+b6jfhTsbSf21qWLTB9Cqauh5Hh9YmZ4+8O0gDvQrWjXXLAE5a7hzy10o32sQJB99cPRHdyeshyYmDt2m6Gwk/XCM7HpKwEdqt2+PNal8+TYustjC5Bd6uXReWhh6SzQsxYkm16L8CssysgRL8K5iZCBVrkwIOskJBMm3c/LHDxQZWezDbfibNZM7Wu40WR1uejlA0aO+X38Jkhr8Gt/jvx+Osrb4pFWLkipryNxjIsBajtQZCpOJFxkEiIjE++PbCZx91yt0Y0iSfII5fEIa/dpeRe6wmKnVHwgcdfQnAjunHKUxTYY/rw+F7cmeBbDNN9d8B6k3DDEUBZrji1ZSK29HstX83NrWVLwdY514jcbcAcWK8r41g+ry52sWXCoivzF6l+9dW5qf9EoVX6+sh45LulkwEZKEFQpfyDxWHJand0cP0oGu0qOilstAlpk/3R3WDPQ3uTRHSvlRJJbpc=
+    file_glob: true
+    file: products/*
+    skip_cleanup: true
+    on:
+        repo: JuliaOpt/COINBLASBuilder
+        tags: true
